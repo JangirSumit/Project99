@@ -1,12 +1,19 @@
 import { createContext, useReducer } from 'react';
-import { reducer } from '../reducers/reducer';
+import GlobalReducer from './GlobalReducer';
 
-const initialState = {};
+const initialState = {
+    accessToken: {
+        token: "",
+        expirationTime: new Date(),
+        role: 0
+    },
+    isAuthenticated: false
+};
 
 const GlobalContext = createContext();
 
 const GlobalContextProvider = ({ children }) => {
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const [state, dispatch] = useReducer(GlobalReducer, initialState);
 
     return (
         <GlobalContext.Provider value={{ state, dispatch }}>

@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GlobalContext } from "../contexts/GlobalContext";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const { state, dispatch } = useContext(GlobalContext);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (state.isAuthenticated) {
+            navigate("/", { replace: true });
+        }
+
+    }, [state.isAuthenticated])
 
     const handleLogin = (e) => {
         e.preventDefault();
 
-        fetch("/api/login", {
+        fetch("/api/users/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -20,7 +31,10 @@ const Login = () => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
+                if (data) {
+                    dispatch({ type: "login", payload: data });
+                    //navigate("/home", { replace: true });
+                }
             });
     }
 
