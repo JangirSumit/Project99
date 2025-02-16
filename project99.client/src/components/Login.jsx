@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../contexts/GlobalContext";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -9,11 +10,12 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(true); // Controls screen visibility
     const { dispatch } = useContext(GlobalContext);
     const navigate = useNavigate();
+    const [authToken, setAuthToken, removeItem] = useLocalStorage("authToken", "");
 
     useEffect(() => {
-        const token = localStorage.getItem("authToken");
+        const token = authToken.token;
+
         if (token) {
-            // Attempt to fetch profile using stored token
             fetch("/api/users/profile", {
                 method: "GET",
                 headers: {
@@ -28,13 +30,15 @@ const Login = () => {
                         navigate("/", { replace: true });
                     } else {
                         // If profile fetch fails, clear token and show login
-                        localStorage.removeItem("authToken");
+                        removeItem("authToken");
                         setIsLoading(false);
+                        navigate("/login", { replace: true });
                     }
                 })
                 .catch(() => {
-                    localStorage.removeItem("authToken");
+                    removeItem("authToken");
                     setIsLoading(false);
+                    navigate("/login", { replace: true });
                 });
         } else {
             setIsLoading(false);
@@ -57,7 +61,7 @@ const Login = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (data?.token) {
-                    localStorage.setItem("authToken", data.token);
+                    setAuthToken(data);
 
                     // Fetch profile after successful login
                     const profileResponse = await fetch("/api/users/profile", {

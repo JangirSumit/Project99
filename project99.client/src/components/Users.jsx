@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
 import Role from "../common/Role";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
-    const [newUser, setNewUser] = useState({ name: "", username: "", role: "User" });
+    const [newUser, setNewUser] = useState({ id: 0, name: "", userName: "", role: 1, password: "User@123" });
+    const [authToken] = useLocalStorage("authToken", "");
 
     useEffect(() => {
         async function getUsers() {
             try {
-                const response = await fetch("/api/users");
+                const response = await fetch("/api/users", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${authToken.token}`
+                    }
+                });
                 const data = await response.json();
                 setUsers(data.users);
-            } catch (e) {
-                console.error(e);
+            } catch (error) {
+                console.error("Error fetching users:", error);
             }
         }
 
@@ -23,13 +31,48 @@ const Users = () => {
         setNewUser({ ...newUser, [e.target.name]: e.target.value });
     };
 
-    const addUser = () => {
-        setUsers([...users, { ...newUser, id: users.length + 1 }]);
-        setNewUser({ name: "", username: "", role: "User" });
+    const addUser = async () => {
+        try {
+            const response = await fetch("/api/users/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken.token}`
+                },
+                body: JSON.stringify(newUser)
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to register user");
+            }
+
+            const addedUserId = await response.json();
+            setUsers([...users, { ...newUser, id: addedUserId }]); // Update UI after API success
+            setNewUser({ id: 0, name: "", userName: "", role: 1, password: "User@123" });
+        } catch (error) {
+            console.error("Error adding user:", error);
+        }
     };
 
-    const deleteUser = (id) => {
-        setUsers(users.filter(user => user.id !== id));
+    const deleteUser = async (id, userName) => {
+        try {
+            const response = await fetch(`/api/users/delete`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken.token}`
+                },
+                body: JSON.stringify({ id: id, userName: userName })
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to delete user");
+            }
+
+            setUsers(users.filter(user => user.id !== id)); // Remove user after success
+        } catch (error) {
+            console.error("Error deleting user:", error);
+        }
     };
 
     return (
@@ -52,7 +95,7 @@ const Users = () => {
                             <td>{Role[user.role]}</td>
                             <td>
                                 {user.userName !== "admin" && (
-                                    <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id)}>
+                                    <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id, user.userName)}>
                                         Delete
                                     </button>
                                 )}
@@ -86,15 +129,23 @@ const Users = () => {
                             />
                             <input
                                 type="text"
-                                name="username"
+                                name="userName"
                                 className="form-control mb-2"
                                 placeholder="Username"
                                 value={newUser.username}
                                 onChange={handleInputChange}
                             />
+                            <input
+                                type="password"
+                                name="password"
+                                className="form-control mb-2"
+                                placeholder="Initial Password"
+                                value={newUser.password}
+                                onChange={handleInputChange}
+                            />
                             <select name="role" className="form-select" value={newUser.role} onChange={handleInputChange}>
-                                <option value="Admin">Admin</option>
-                                <option value="User">User</option>
+                                <option value="0">Admin</option>
+                                <option value="1">User</option>
                             </select>
                         </div>
                         <div className="modal-footer">

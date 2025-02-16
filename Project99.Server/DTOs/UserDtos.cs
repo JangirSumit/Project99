@@ -17,3 +17,5 @@ public record RegisterResponse(int Id);
 public record ProfileResponse(string Name, string UserName, Role Role);
 
 public record UpdatePasswordRequest(string OldPassword, string NewPassword);
+
+public record DeleteUserRequest(int Id, string UserName);

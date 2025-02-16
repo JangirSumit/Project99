@@ -3,18 +3,37 @@ using Project99.Server.Repositories.Models;
 
 namespace Project99.Server.Repositories
 {
-    public class UserRepository : IRepository<User>
+    public class UserRepository(AppDbContext appDbContext) : IRepository<User>
     {
-        private readonly AppDbContext _appDbContext;
-
-        public UserRepository(AppDbContext appDbContext)
-        {
-            _appDbContext = appDbContext;
-        }
+        private readonly AppDbContext _appDbContext = appDbContext;
 
         public int Add(User entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var result = _appDbContext.Users.Add(entity);
+                _appDbContext.SaveChanges();
+                return result.Entity.Id;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public bool Delete(User entity)
+        {
+            try
+            {
+                var result = _appDbContext.Users.Remove(entity);
+                _appDbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public User Get(int id)
@@ -45,7 +64,17 @@ namespace Project99.Server.Repositories
 
         public bool Update(User entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var result = _appDbContext.Users.Update(entity);
+                _appDbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

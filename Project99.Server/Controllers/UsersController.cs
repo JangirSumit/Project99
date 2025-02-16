@@ -41,7 +41,7 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
     /// 🔹 API to Register a New User with Encrypted Password
     [HttpPost("register")]
     [Authorize]
-    public ActionResult Register([FromBody] RegisterRequest newUser)
+    public ActionResult<int> Register([FromBody] RegisterRequest newUser)
     {
         try
         {
@@ -54,13 +54,35 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
 
             var user = new User
             {
+                Name = newUser.Name,
                 UserName = newUser.UserName,
                 Password = hashedPassword, // 🔒 Store only the hashed password
                 Role = newUser.Role
             };
 
-            _userRepository.Add(user);
-            return Ok(new { message = "User registered successfully" });
+            var result = _userRepository.Add(user);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "User registration error");
+            return StatusCode(500, "Internal Server Error");
+        }
+    }
+
+    [HttpDelete("delete")]
+    [Authorize]
+    public ActionResult<bool> Delete([FromBody] DeleteUserRequest deleteUserRequest)
+    {
+        try
+        {
+            // Check if username already exists
+            var user = _userRepository.Get().FirstOrDefault(u => u.UserName == deleteUserRequest.UserName && u.Id == deleteUserRequest.Id);
+            if (user is null)
+                return NotFound(new { message = "Username does not exists" });
+
+            var result = _userRepository.Delete(user);
+            return Ok(result);
         }
         catch (Exception ex)
         {
