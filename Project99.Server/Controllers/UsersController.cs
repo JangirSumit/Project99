@@ -99,11 +99,12 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new
-            {
-                token = tokenHandler.WriteToken(token),
-                expiration = token.ValidTo
-            });
+            return Ok(new LoginResponse
+            (
+                tokenHandler.WriteToken(token),
+                token.ValidTo,
+                foundUser.Role
+            ));
         }
         catch (Exception ex)
         {

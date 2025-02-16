@@ -4,6 +4,20 @@ const Users = () => {
     const [users, setUsers] = useState([]);
     const [newUser, setNewUser] = useState({ name: "", username: "", role: "User" });
 
+    useEffect(() => {
+        async function getUsers() {
+            try {
+                const response = await fetch("/api/users");
+                const data = await response.json();
+                setUsers(data);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        getUsers();
+    }, []);
+
     const handleInputChange = (e) => {
         setNewUser({ ...newUser, [e.target.name]: e.target.value });
     };
@@ -13,20 +27,9 @@ const Users = () => {
         setNewUser({ name: "", username: "", role: "User" });
     };
 
-    useEffect(() => {
-        async function getUsers() {
-            try {
-                const response = await fetch("/api/users");
-                const data = await response.json();
-
-                setUsers(data)
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        getUsers();
-    }, [])
+    const deleteUser = (id) => {
+        setUsers(users.filter(user => user.id !== id));
+    };
 
     return (
         <div className="container mt-4">
@@ -37,6 +40,7 @@ const Users = () => {
                         <th>Name</th>
                         <th>Username</th>
                         <th>Role</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,17 +49,20 @@ const Users = () => {
                             <td>{user.name}</td>
                             <td>{user.username}</td>
                             <td>{user.role}</td>
+                            <td>
+                                {user.role !== "Admin" && (
+                                    <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id)}>
+                                        Delete
+                                    </button>
+                                )}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
             {/* Button to trigger modal */}
-            <button
-                className="btn btn-primary mt-3"
-                data-bs-toggle="modal"
-                data-bs-target="#addUserModal"
-            >
+            <button className="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 Add New User
             </button>
 
@@ -84,19 +91,16 @@ const Users = () => {
                                 value={newUser.username}
                                 onChange={handleInputChange}
                             />
-                            <select
-                                name="role"
-                                className="form-select"
-                                value={newUser.role}
-                                onChange={handleInputChange}
-                            >
+                            <select name="role" className="form-select" value={newUser.role} onChange={handleInputChange}>
                                 <option value="Admin">Admin</option>
                                 <option value="User">User</option>
                             </select>
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button className="btn btn-success" data-bs-dismiss="modal" onClick={addUser}>Add User</button>
+                            <button className="btn btn-success" data-bs-dismiss="modal" onClick={addUser}>
+                                Add User
+                            </button>
                         </div>
                     </div>
                 </div>

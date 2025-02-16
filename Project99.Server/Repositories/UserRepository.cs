@@ -34,7 +34,7 @@ namespace Project99.Server.Repositories
         {
             try
             {
-                return _appDbContext.Users.ToArray();
+                return [.. _appDbContext.Users];
             }
             catch (Exception)
             {

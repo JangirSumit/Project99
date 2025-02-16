@@ -16,26 +16,31 @@ const Login = () => {
 
     }, [state.isAuthenticated])
 
-    const handleLogin = (e) => {
-        e.preventDefault();
-
-        fetch("/api/users/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                userName: email,
-                password: password
-            }),
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data) {
-                    dispatch({ type: "login", payload: data });
-                    //navigate("/home", { replace: true });
-                }
+    const handleLogin = async () => {
+        try {
+            var response = await fetch("/api/users/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userName: email,
+                    password: password
+                }),
             });
+
+            if (response.ok) {
+                var data = await response.json();
+
+                if (data) {
+                    dispatch({ type: "login", payload: data })
+                }
+            } else {
+                alert("Invalid username or password...")
+            }
+        } catch (e) {
+            alert(e.message);
+        }
     }
 
     return (
