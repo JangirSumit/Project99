@@ -13,3 +13,7 @@ public record UsersResponse(UserResponse[] Users);
 public record RegisterRequest(string Name, string UserName, string Password, Role Role);
 
 public record RegisterResponse(int Id);
+
+public record ProfileResponse(string Name, string UserName, Role Role);
+
+public record UpdatePasswordRequest(string OldPassword, string NewPassword);

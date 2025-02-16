@@ -42,5 +42,10 @@ namespace Project99.Server.Repositories
                 throw;
             }
         }
+
+        public bool Update(User entity)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

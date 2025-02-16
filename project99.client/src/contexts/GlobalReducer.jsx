@@ -1,24 +1,27 @@
-const defaultAccessToken = {
-    token: "",
-    expirationTime: new Date(),
+const defaultProfile = {
+    name: "",
+    userName: "",
     role: 0
 }
 
 const GlobalReducer = (state, action) => {
     switch (action.type) {
-        case "login":
-            return {
-                ...state,
-                accessToken: { ...action.payload },
-                isAuthenticated: true,
-            };
         case "logout":
+            localStorage.removeItem("authToken");
             return {
                 ...state,
-                accessToken: {
-                    ...defaultAccessToken
+                profile: {
+                    ...defaultProfile
                 },
                 isAuthenticated: false,
+            };
+        case "setProfile":
+            return {
+                ...state,
+                isAuthenticated: true,
+                profile: {
+                    ...action.payload
+                }
             }
         default:
             return state;

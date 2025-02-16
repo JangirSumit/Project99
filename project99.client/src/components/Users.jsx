@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Role from "../common/Role";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -9,7 +10,7 @@ const Users = () => {
             try {
                 const response = await fetch("/api/users");
                 const data = await response.json();
-                setUsers(data);
+                setUsers(data.users);
             } catch (e) {
                 console.error(e);
             }
@@ -38,19 +39,19 @@ const Users = () => {
                 <thead className="table-dark">
                     <tr>
                         <th>Name</th>
-                        <th>Username</th>
+                        <th>User Name</th>
                         <th>Role</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((user) => (
+                    {users && users.map((user) => (
                         <tr key={user.id}>
                             <td>{user.name}</td>
-                            <td>{user.username}</td>
-                            <td>{user.role}</td>
+                            <td>{user.userName}</td>
+                            <td>{Role[user.role]}</td>
                             <td>
-                                {user.role !== "Admin" && (
+                                {user.userName !== "admin" && (
                                     <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id)}>
                                         Delete
                                     </button>

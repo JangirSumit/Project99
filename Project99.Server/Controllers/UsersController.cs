@@ -23,6 +23,7 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
     private readonly IRepository<User> _userRepository = userRepository;
 
     [HttpGet]
+    [Authorize]
     public ActionResult<UsersResponse> Get()
     {
         try
@@ -39,6 +40,7 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
 
     /// 🔹 API to Register a New User with Encrypted Password
     [HttpPost("register")]
+    [Authorize]
     public ActionResult Register([FromBody] RegisterRequest newUser)
     {
         try
@@ -89,7 +91,8 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
             {
                 Subject = new ClaimsIdentity(
                 [
-                        new Claim(ClaimTypes.Name, foundUser.UserName),
+                        new Claim(ClaimTypes.Name, foundUser.Name),
+                        new Claim(ClaimTypes.NameIdentifier, foundUser.UserName),
                         new Claim(ClaimTypes.Role, foundUser.Role.ToString())
                     ]),
                 Expires = DateTime.UtcNow.AddHours(1),
@@ -113,16 +116,53 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
         }
     }
 
-    [HttpGet("profile")]
+    [HttpPut("update-password")]
     [Authorize]
-    public ActionResult<object> GetProfile()
+    public ActionResult UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
         try
         {
-            var username = User.Identity?.Name;
+            // Get the current logged-in user
+            var userName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (userName == null)
+                return Unauthorized(new { message = "User not authenticated" });
+
+            // Find the user in the repository
+            var user = _userRepository.Get().FirstOrDefault(u => u.UserName == userName);
+            if (user == null)
+                return NotFound(new { message = "User not found" });
+
+            // Verify the old password
+            if (!BCrypt.Net.BCrypt.Verify(request.OldPassword, user.Password))
+                return BadRequest(new { message = "Old password is incorrect" });
+
+            // Hash the new password
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+            // Save the updated user record
+            _userRepository.Update(user);
+
+            return Ok(new { message = "Password updated successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating password");
+            return StatusCode(500, "Internal Server Error");
+        }
+    }
+
+
+    [HttpGet("profile")]
+    [Authorize]
+    public ActionResult<ProfileResponse> GetProfile()
+    {
+        try
+        {
+            var name = User.Identity?.Name;
+            var userName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
 
-            return Ok(new { username, role });
+            return Ok(new ProfileResponse(name, userName, (Role)Enum.Parse(typeof(Role), role)));
         }
         catch (Exception ex)
         {

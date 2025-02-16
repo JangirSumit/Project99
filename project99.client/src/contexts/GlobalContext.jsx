@@ -2,9 +2,9 @@ import { createContext, useReducer } from 'react';
 import GlobalReducer from './GlobalReducer';
 
 const initialState = {
-    accessToken: {
-        token: "",
-        expirationTime: new Date(),
+    profile: {
+        name: "",
+        userName: "",
         role: 0
     },
     isAuthenticated: false

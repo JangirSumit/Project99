@@ -6,19 +6,44 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-    const { state, dispatch } = useContext(GlobalContext);
+    const [isLoading, setIsLoading] = useState(true); // Controls screen visibility
+    const { dispatch } = useContext(GlobalContext);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (state.isAuthenticated) {
-            navigate("/", { replace: true });
+        const token = localStorage.getItem("authToken");
+        if (token) {
+            // Attempt to fetch profile using stored token
+            fetch("/api/users/profile", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+                .then(async (response) => {
+                    if (response.ok) {
+                        const profileData = await response.json();
+                        dispatch({ type: "setProfile", payload: profileData });
+                        navigate("/", { replace: true });
+                    } else {
+                        // If profile fetch fails, clear token and show login
+                        localStorage.removeItem("authToken");
+                        setIsLoading(false);
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem("authToken");
+                    setIsLoading(false);
+                });
+        } else {
+            setIsLoading(false);
         }
-
-    }, [state.isAuthenticated])
+    }, []);
 
     const handleLogin = async () => {
         try {
-            var response = await fetch("/api/users/login", {
+            const response = await fetch("/api/users/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -30,17 +55,35 @@ const Login = () => {
             });
 
             if (response.ok) {
-                var data = await response.json();
+                const data = await response.json();
+                if (data?.token) {
+                    localStorage.setItem("authToken", data.token);
 
-                if (data) {
-                    dispatch({ type: "login", payload: data })
+                    // Fetch profile after successful login
+                    const profileResponse = await fetch("/api/users/profile", {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${data.token}`
+                        }
+                    });
+
+                    if (profileResponse.ok) {
+                        const profileData = await profileResponse.json();
+                        dispatch({ type: "setProfile", payload: profileData });
+                        navigate("/", { replace: true });
+                    }
                 }
             } else {
-                alert("Invalid username or password...")
+                alert("Invalid username or password...");
             }
         } catch (e) {
             alert(e.message);
         }
+    };
+
+    if (isLoading) {
+        return <div className="d-flex justify-content-center align-items-center vh-100">Loading...</div>;
     }
 
     return (
@@ -76,16 +119,12 @@ const Login = () => {
                     />
                     <label className="form-check-label">Remember Me</label>
                 </div>
-                <button
-                    className="btn btn-primary w-100"
-                    onClick={handleLogin}
-                >
+                <button className="btn btn-primary w-100" onClick={handleLogin}>
                     Login
                 </button>
             </div>
         </div>
     );
 };
-
 
 export default Login;
