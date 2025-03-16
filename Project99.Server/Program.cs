@@ -9,8 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddDbContext<AppDbContext>();
-builder.Services.AddTransient<IRepository<User>, UserRepository>();
+
+ConfigureServices(builder);
+
 
 // 🔒 Configure JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"];
@@ -69,3 +70,10 @@ app.MapControllers();
 app.MapFallbackToFile("/index.html");
 
 app.Run();
+
+static void ConfigureServices(WebApplicationBuilder builder)
+{
+    builder.Services.AddDbContext<AppDbContext>();
+    builder.Services.AddTransient<IRepository<User>, UserRepository>();
+    builder.Services.AddTransient<IRepository<Ticket>, TicketRepository>();
+}
