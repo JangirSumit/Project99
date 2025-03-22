@@ -51,14 +51,17 @@ public class TicketController(ILogger<TicketController> logger,
     {
         try
         {
-            var user = new Ticket
+            var ticket = new Ticket
             {
                 Title = newTicket.Title,
                 Description = newTicket.Description,
-                Status = newTicket.Status
+                Status = newTicket.Status,
+                OrganizationId = newTicket.OrganizationId,
+                priority = newTicket.Priority,
+
             };
 
-            var result = _ticketRepository.Add(user);
+            var result = _ticketRepository.Add(ticket);
             return Ok(result);
         }
         catch (Exception ex)

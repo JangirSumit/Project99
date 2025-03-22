@@ -3,6 +3,7 @@
 public interface IRepository<T>
 {
     T Get(int id);
+    T[] GetByCatagory(int id);
     T[] Get();
     int Add(T entity);
     bool Update(T entity);

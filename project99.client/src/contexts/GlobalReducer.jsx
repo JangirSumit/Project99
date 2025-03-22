@@ -1,7 +1,8 @@
 const defaultProfile = {
     name: "",
     userName: "",
-    role: 0
+    role: 0,
+    costomerId: 0
 }
 
 const GlobalReducer = (state, action) => {

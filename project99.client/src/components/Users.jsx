@@ -84,6 +84,7 @@ const Users = () => {
                         <th>Name</th>
                         <th>User Name</th>
                         <th>Role</th>
+                        <th>Organization</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -93,6 +94,7 @@ const Users = () => {
                             <td>{user.name}</td>
                             <td>{user.userName}</td>
                             <td>{Role[user.role]}</td>
+                            <td>{user.organizationId}</td>
                             <td>
                                 {user.userName !== "admin" && (
                                     <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id, user.userName)}>
@@ -141,6 +143,14 @@ const Users = () => {
                                 className="form-control mb-2"
                                 placeholder="Initial Password"
                                 value={newUser.password}
+                                onChange={handleInputChange}
+                            />
+                            <input
+                                type="text"
+                                name="organization"
+                                className="form-control mb-2"
+                                placeholder="Organization"
+                                value={newUser.organizationId}
                                 onChange={handleInputChange}
                             />
                             <select name="role" className="form-select" value={newUser.role} onChange={handleInputChange}>

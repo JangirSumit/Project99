@@ -10,7 +10,9 @@ public class Ticket
     public int Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
+    public Priority priority  { get; set; }
     public Status Status { get; set; }
+    public int OrganizationId { get; set; }
 }
 
 public enum Status
@@ -19,4 +21,11 @@ public enum Status
     InProgress,
     Done,
     Closed
+}
+
+public enum Priority
+{
+    Low,
+    Medium,
+    High
 }

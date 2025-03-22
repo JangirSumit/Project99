@@ -7,7 +7,7 @@ public static class UserDtoExtensions
 {
     public static UserResponse ToUserResponse(this User user)
     {
-        return new UserResponse(user.Id, user.Name, user.UserName, user.Role);
+        return new UserResponse(user.Id, user.Name, user.UserName, user.Role, user.OrganizationId);
     }
 
     public static UsersResponse ToUsersResponse(this User[] users)

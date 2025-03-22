@@ -6,7 +6,7 @@ public record TicketResponse(int Id, string Title, string Description, Status St
 
 public record TicketsResponse(TicketResponse[] Tickets);
 
-public record RegisterTicketRequest(string Title, string Description, Status Status);
+public record RegisterTicketRequest(string Title, string Description, Status Status, int OrganizationId, Priority Priority);
 
 public record RegisterTicketResponse(int Id);
 

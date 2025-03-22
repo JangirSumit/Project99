@@ -11,6 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Profile from "./components/Profile";
 import useLocalStorage from "./hooks/useLocalStorage";  // Import the custom hook
+import Register from './components/Register';
 
 function AppContent() {
     const [authToken] = useLocalStorage("authToken", "");  // Get auth token from localStorage
@@ -30,6 +31,7 @@ function AppContent() {
                 <Route path="/users" element={<ProtectedRoute><Users /></ProtectedRoute>} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/register" element={<ProtectedRoute><Register /></ProtectedRoute>} />
             </Routes>
         </div>
     );

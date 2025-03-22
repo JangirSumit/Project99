@@ -62,6 +62,11 @@ namespace Project99.Server.Repositories
             }
         }
 
+        public User[] GetByCatagory(int id)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool Update(User entity)
         {
             try

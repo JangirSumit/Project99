@@ -3,15 +3,15 @@ using Project99.Server.Repositories.Models;
 
 namespace Project99.Server.Repositories
 {
-    public class TicketRepository(AppDbContext appDbContext) : IRepository<Ticket>
+    public class TenentRepository(AppDbContext appDbContext) : IRepository<Tenent>
     {
         private readonly AppDbContext _appDbContext = appDbContext;
 
-        public int Add(Ticket entity)
+        public int Add(Tenent entity)
         {
             try
             {
-                var result = _appDbContext.Tickets.Add(entity);
+                var result = _appDbContext.Tenents.Add(entity);
                 _appDbContext.SaveChanges();
                 return result.Entity.Id;
             }
@@ -21,11 +21,11 @@ namespace Project99.Server.Repositories
             }
         }
 
-        public bool Delete(Ticket entity)
+        public bool Delete(Tenent entity)
         {
             try
             {
-                var result = _appDbContext.Tickets.Remove(entity);
+                var result = _appDbContext.Tenents.Remove(entity);
                 _appDbContext.SaveChanges();
                 return true;
             }
@@ -36,24 +36,24 @@ namespace Project99.Server.Repositories
             }
         }
 
-        public Ticket Get(int id)
+        public Tenent Get(int id)
         {
             try
             {
-                return _appDbContext.Tickets.First(ticket => ticket.Id == id);
+                return _appDbContext.Tenents.First(ticket => ticket.Id == id);
             }
             catch (Exception ex)
             {
-                throw new Exception("Ticket does not exist");
+                throw new Exception("Tenent does not exist");
             }
 
         }
 
-        public Ticket[] Get()
+        public Tenent[] Get()
         {
             try
             {
-                return _appDbContext.Tickets.ToArray();
+                return _appDbContext.Tenents.ToArray();
             }
             catch (Exception)
             {
@@ -62,16 +62,16 @@ namespace Project99.Server.Repositories
             }
         }
 
-        public Ticket[] GetByCatagory(int id)
+        public Tenent[] GetByCatagory(int id)
         {
             throw new NotImplementedException();
         }
 
-        public bool Update(Ticket entity)
+        public bool Update(Tenent entity)
         {
             try
             {
-                var result = _appDbContext.Tickets.Update(entity);
+                var result = _appDbContext.Tenents.Update(entity);
                 _appDbContext.SaveChanges();
                 return true;
             }
