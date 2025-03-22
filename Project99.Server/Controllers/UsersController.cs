@@ -57,7 +57,8 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
                 Name = newUser.Name,
                 UserName = newUser.UserName,
                 Password = hashedPassword, // 🔒 Store only the hashed password
-                Role = newUser.Role
+                Role = newUser.Role,
+                OrganizationId = newUser.organizationId
             };
 
             var result = _userRepository.Add(user);
@@ -115,7 +116,8 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
                 [
                         new Claim(ClaimTypes.Name, foundUser.Name),
                         new Claim(ClaimTypes.NameIdentifier, foundUser.UserName),
-                        new Claim(ClaimTypes.Role, foundUser.Role.ToString())
+                        new Claim(ClaimTypes.Role, foundUser.Role.ToString()),
+                        new Claim("OrganizationId", foundUser.OrganizationId.ToString())
                     ]),
                 Expires = DateTime.UtcNow.AddHours(1),
                 Issuer = _configuration["Jwt:Issuer"],
@@ -183,8 +185,9 @@ public class UsersController(ILogger<UsersController> logger, IConfiguration con
             var name = User.Identity?.Name;
             var userName = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value;
+            var OrganizationId = User.Claims.FirstOrDefault(c => c.Type == "OrganizationId")?.Value;
 
-            return Ok(new ProfileResponse(name, userName, (Role)Enum.Parse(typeof(Role), role)));
+            return Ok(new ProfileResponse(name, userName, (Role)Enum.Parse(typeof(Role), role), Convert.ToInt32(OrganizationId)));
         }
         catch (Exception ex)
         {

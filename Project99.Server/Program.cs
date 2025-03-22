@@ -76,4 +76,5 @@ static void ConfigureServices(WebApplicationBuilder builder)
     builder.Services.AddDbContext<AppDbContext>();
     builder.Services.AddTransient<IRepository<User>, UserRepository>();
     builder.Services.AddTransient<IRepository<Ticket>, TicketRepository>();
+    builder.Services.AddTransient<IRepository<Tenent>, TenentRepository>();
 }

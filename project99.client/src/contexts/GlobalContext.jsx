@@ -5,7 +5,8 @@ const initialState = {
     profile: {
         name: "",
         userName: "",
-        role: 0
+        role: 0,
+        OrganizationId: 0
     },
     isAuthenticated: false
 };

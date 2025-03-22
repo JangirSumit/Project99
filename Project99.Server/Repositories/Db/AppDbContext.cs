@@ -6,7 +6,8 @@ namespace Project99.Server.Repositories.Db;
 public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
-    public DbSet<Ticket> Tickets { get; set; } 
+    public DbSet<Ticket> Tickets { get; set; }
+    public DbSet<Tenent> Tenents { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
