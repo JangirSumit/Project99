@@ -7,7 +7,7 @@ public static class TicketDtoExtensions
 {
     public static TicketResponse ToTicketResponse(this Ticket ticket)
     {
-        return new TicketResponse(ticket.Id, ticket.Title, ticket.Description, ticket.Status);
+        return new TicketResponse(ticket.Id, ticket.Title, ticket.Products, ticket.Status, ticket.OrganizationId);
     }
 
     public static TicketsResponse ToTicketResponse(this Ticket[] tickets)

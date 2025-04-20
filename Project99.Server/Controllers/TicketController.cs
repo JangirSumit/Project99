@@ -4,6 +4,7 @@ using Project99.Server.DTOs;
 using Project99.Server.Extensions;
 using Project99.Server.Repositories;
 using Project99.Server.Repositories.Models;
+using System.Web.Helpers;
 using RegisterRequest = Project99.Server.DTOs.RegisterTicketRequest;
 
 namespace Project99.Server.Controllers;
@@ -54,10 +55,10 @@ public class TicketController(ILogger<TicketController> logger,
             var ticket = new Ticket
             {
                 Title = newTicket.Title,
-                Description = newTicket.Description,
+                Products = Json.Encode(newTicket.products),
                 Status = newTicket.Status,
                 OrganizationId = newTicket.OrganizationId,
-                priority = newTicket.Priority,
+                Priority = newTicket.Priority,
 
             };
 
@@ -100,12 +101,6 @@ public class TicketController(ILogger<TicketController> logger,
             var Ticket = _ticketRepository.Get().FirstOrDefault(u => u.Id == request.Id);
             if (Ticket == null)
                 return NotFound(new { message = "Ticket not found" });
-
-            // update the new Title
-            Ticket.Title = request.Title;
-
-            // update the new Description
-            Ticket.Description = request.Description;
 
             // update the status
             Ticket.Status = request.Status;

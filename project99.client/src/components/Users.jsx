@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import Role from "../common/Role";
 import useLocalStorage from "../hooks/useLocalStorage";
+import Select from "react-select";
 
 const Users = () => {
     const [users, setUsers] = useState([]);
-    const [newUser, setNewUser] = useState({ id: 0, name: "", userName: "", role: 1, password: "User@123" });
+    const [organizations, setOrganizations] = useState([]);
+    const [newUser, setNewUser] = useState({ id: 0, name: "", userName: "", role: 1, password: "User@123", organizationId: null });
     const [authToken] = useLocalStorage("authToken", "");
 
     useEffect(() => {
@@ -24,11 +26,33 @@ const Users = () => {
             }
         }
 
+        async function getOrganizations() {
+            try {
+                const response = await fetch("/api/tenents", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+                const data = await response.json();
+                setOrganizations(data);
+            } catch (error) {
+                console.error("Error fetching organizations:", error);
+            }
+        }
+
         getUsers();
+        getOrganizations();
     }, []);
 
     const handleInputChange = (e) => {
         setNewUser({ ...newUser, [e.target.name]: e.target.value });
+    };
+
+    const handleCustomerSelect = (selectedOption) => {
+        if (selectedOption) {
+            setNewUser(prevUser => ({ ...prevUser, customerId: selectedOption.value }));
+        }
     };
 
     const addUser = async () => {
@@ -47,74 +71,53 @@ const Users = () => {
             }
 
             const addedUserId = await response.json();
-            setUsers([...users, { ...newUser, id: addedUserId }]); // Update UI after API success
-            setNewUser({ id: 0, name: "", userName: "", role: 1, password: "User@123" });
+            setUsers([...users, { ...newUser, id: addedUserId }]);
+            setNewUser({ id: 0, name: "", userName: "", role: 1, password: "User@123", organizationId: null });
         } catch (error) {
             console.error("Error adding user:", error);
-        }
-    };
-
-    const deleteUser = async (id, userName) => {
-        try {
-            const response = await fetch(`/api/users/delete`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${authToken.token}`
-                },
-                body: JSON.stringify({ id: id, userName: userName })
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to delete user");
-            }
-
-            setUsers(users.filter(user => user.id !== id)); // Remove user after success
-        } catch (error) {
-            console.error("Error deleting user:", error);
         }
     };
 
     return (
         <div className="container mt-4">
             <h2>Users</h2>
-            <table className="table table-bordered">
-                <thead className="table-dark">
-                    <tr>
-                        <th>Name</th>
-                        <th>User Name</th>
-                        <th>Role</th>
-                        <th>Organization</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users && users.map((user) => (
-                        <tr key={user.id}>
-                            <td>{user.name}</td>
-                            <td>{user.userName}</td>
-                            <td>{Role[user.role]}</td>
-                            <td>{user.organizationId}</td>
-                            <td>
-                                {user.userName !== "admin" && (
-                                    <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id, user.userName)}>
-                                        Delete
-                                    </button>
-                                )}
-                            </td>
+            <div className="table-responsive">
+                <table className="table table-bordered">
+                    <thead className="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Organization</th>
+                            <th>Actions</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {users && users.map((user) => (
+                            <tr key={user.id}>
+                                <td>{user.name}</td>
+                                <td>{user.userName}</td>
+                                <td>{Role[user.role]}</td>
+                                <td>{user.organizationId}</td>
+                                <td>
+                                    {user.userName !== "admin" && (
+                                        <button className="btn btn-danger btn-sm" onClick={() => deleteUser(user.id, user.userName)}>
+                                            Delete
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Button to trigger modal */}
             <button className="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 Add New User
             </button>
 
-            {/* Modal for adding new user */}
             <div className="modal fade" id="addUserModal" tabIndex="-1" aria-hidden="true">
-                <div className="modal-dialog">
+                <div className="modal-dialog modal-dialog-centered">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">Add New User</h5>
@@ -134,7 +137,7 @@ const Users = () => {
                                 name="userName"
                                 className="form-control mb-2"
                                 placeholder="Username"
-                                value={newUser.username}
+                                value={newUser.userName}
                                 onChange={handleInputChange}
                             />
                             <input
@@ -145,14 +148,15 @@ const Users = () => {
                                 value={newUser.password}
                                 onChange={handleInputChange}
                             />
-                            <input
-                                type="text"
-                                name="organization"
-                                className="form-control mb-2"
-                                placeholder="Organization"
-                                value={newUser.organizationId}
-                                onChange={handleInputChange}
+
+                            <Select
+                                options={organizations.map(org => ({ value: org.id, label: org.name }))}
+                                onChange={handleCustomerSelect}
+                                placeholder="Select Organization"
+                                isSearchable
+                                className="mb-2"
                             />
+
                             <select name="role" className="form-select" value={newUser.role} onChange={handleInputChange}>
                                 <option value="0">Admin</option>
                                 <option value="1">User</option>

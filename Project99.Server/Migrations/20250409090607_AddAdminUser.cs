@@ -5,7 +5,7 @@
 namespace Project99.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class SeedAdminUser : Migration
+    public partial class AddAdminUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -13,8 +13,8 @@ namespace Project99.Server.Migrations
             string adminHashedPassword = BCrypt.Net.BCrypt.HashPassword("Admin@123");
 
             migrationBuilder.Sql($@"
-                INSERT INTO Users (Id, Name, UserName, Password, Role)
-                SELECT 1, 'Admin', 'admin', '{adminHashedPassword}', 'Admin'
+                INSERT INTO Users (Id, Name, UserName, Password, Role, OrganizationId)
+                SELECT 1, 'Admin', 'admin', '{adminHashedPassword}', 'Admin', 1000
                 WHERE NOT EXISTS (SELECT 1 FROM Users WHERE UserName = 'admin');
             ");
         }
