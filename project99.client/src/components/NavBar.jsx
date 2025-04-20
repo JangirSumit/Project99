@@ -1,11 +1,12 @@
 import { useContext } from "react";
 import { Link } from "react-router-dom";
-import { GlobalContext } from "../contexts/GlobalContext";
+import { GlobalContext } from "../contexts/GlobalContext"; // Ensure correct path
 import { FaHome, FaUsers, FaUserPlus, FaUser, FaSignOutAlt } from "react-icons/fa";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const Navbar = () => {
     const { state, dispatch } = useContext(GlobalContext);
-    const profile = state.profile; // Assuming 'profile' contains user info
+    const profile = state?.profile || {}; // Adding safety check
 
     return (
         <>
@@ -76,55 +77,28 @@ const Navbar = () => {
             </nav>
 
             {/* Bottom Navbar (Mobile View) */}
-            <div className="bottom-nav d-md-none">
-                <Link to="/" className="nav-link">
-                    <FaHome />
-                    <span>Home</span>
-                </Link>
-                <Link to="/users" className="nav-link">
-                    <FaUsers />
-                    <span>Users</span>
-                </Link>
-                <Link to="/register" className="nav-link">
-                    <FaUserPlus />
-                    <span>Register</span>
-                </Link>
-                {profile.name ? (
-                    <Link to="/profile" className="nav-link">
-                        <FaUser />
-                        <span>Profile</span>
+            <nav className="navbar fixed-bottom navbar-light bg-light d-md-none border-top">
+                <div className="container d-flex justify-content-around">
+                    <Link to="/" className="nav-link text-center">
+                        <FaHome size={24} />
+                        <div>Home</div>
                     </Link>
-                ) : null}
-            </div>
-
-            {/* Bottom Nav CSS */}
-            <style>
-                {`
-                .bottom-nav {
-                    position: fixed;
-                    bottom: 0;
-                    left: 0;
-                    width: 100%;
-                    background: #fff;
-                    border-top: 1px solid #ccc;
-                    display: flex;
-                    justify-content: space-around;
-                    padding: 10px 0;
-                    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-                }
-                .bottom-nav .nav-link {
-                    text-decoration: none;
-                    color: #333;
-                    font-size: 14px;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                }
-                .bottom-nav .nav-link svg {
-                    font-size: 22px;
-                }
-                `}
-            </style>
+                    <Link to="/users" className="nav-link text-center">
+                        <FaUsers size={24} />
+                        <div>Users</div>
+                    </Link>
+                    <Link to="/register" className="nav-link text-center">
+                        <FaUserPlus size={24} />
+                        <div>Register</div>
+                    </Link>
+                    {profile.name && (
+                        <Link to="/profile" className="nav-link text-center">
+                            <FaUser size={24} />
+                            <div>Profile</div>
+                        </Link>
+                    )}
+                </div>
+            </nav>
         </>
     );
 };

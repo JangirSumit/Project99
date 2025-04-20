@@ -10,8 +10,8 @@ using Project99.Server.Repositories.Db;
 namespace Project99.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250321155840_AddUserOrgId")]
-    partial class AddUserOrgId
+    [Migration("20250409084143_InitDB")]
+    partial class InitDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,18 +19,40 @@ namespace Project99.Server.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
+            modelBuilder.Entity("Project99.Server.Repositories.Models.Tenent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("GSTNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tenents");
+                });
+
             modelBuilder.Entity("Project99.Server.Repositories.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("OrganizationId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Products")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
@@ -38,13 +60,6 @@ namespace Project99.Server.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("customerName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("priority")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

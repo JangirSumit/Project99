@@ -10,8 +10,8 @@ using Project99.Server.Repositories.Db;
 namespace Project99.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250318160528_TicketUpdateColumns")]
-    partial class TicketUpdateColumns
+    [Migration("20250409094132_UdateTableTickts")]
+    partial class UdateTableTickts
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,13 +19,38 @@ namespace Project99.Server.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.2");
 
+            modelBuilder.Entity("Project99.Server.Repositories.Models.Tenent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("GSTNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tenents");
+                });
+
             modelBuilder.Entity("Project99.Server.Repositories.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Description")
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Products")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -35,13 +60,6 @@ namespace Project99.Server.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<string>("customerName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("priority")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -57,6 +75,9 @@ namespace Project99.Server.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("OrganizationId")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Password")
                         .IsRequired()
