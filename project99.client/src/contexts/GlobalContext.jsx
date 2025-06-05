@@ -1,6 +1,8 @@
 import { createContext, useReducer } from 'react';
 import GlobalReducer from './GlobalReducer';
 
+//const tokenFromStorage = JSON.parse(localStorage.getItem("authToken") || "{}");
+
 const initialState = {
     profile: {
         name: "",
