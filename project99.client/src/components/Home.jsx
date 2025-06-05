@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
+import { useNavigate, useLocation } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const statusMap = {
@@ -22,6 +23,8 @@ const Tickets = () => {
     const [customers, setCustomers] = useState([]);
     const { state } = useContext(GlobalContext);
     const profile = state.profile;
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const handleViewTicket = async (id) => {
         try {
@@ -32,6 +35,7 @@ const Tickets = () => {
                 }
             });
             const data = await response.json();
+            navigate(`?ticketid=${id}`, { replace: false });
             setSelectedTicket(data);
         } catch (error) {
             console.error("Error fetching ticket details:", error);
@@ -39,6 +43,9 @@ const Tickets = () => {
     };
 
     const handleCloseTicket = () => {
+        const newParams = new URLSearchParams(location.search);
+        newParams.delete('ticketid');
+        navigate(`?${newParams.toString()}`, { replace: false });
         setSelectedTicket(null);
     };
 
@@ -67,7 +74,7 @@ const Tickets = () => {
     useEffect(() => {
         const fetchCustomersAndTickets = async () => {
             try {
-                // Fetch customers first
+                // Fetch customers
                 let customerApiUrl = profile.role === 0
                     ? "/api/tenents"
                     : `/api/tenents/${profile.OrganizationId}`;
@@ -76,7 +83,7 @@ const Tickets = () => {
                 const customerData = await customerRes.json();
                 setCustomers(customerData);
 
-                // Then fetch tickets
+                // Fetch tickets
                 let ticketApiUrl = profile.role === 0
                     ? "/api/tickets"
                     : `/api/tickets/${profile.OrganizationId}`;
@@ -87,7 +94,7 @@ const Tickets = () => {
                 });
                 const ticketData = await ticketRes.json();
 
-                // Sort tickets based on status order
+                // Sort tickets
                 ticketData.sort((a, b) => {
                     const aLabel = statusMap[a.status];
                     const bLabel = statusMap[b.status];
@@ -95,13 +102,21 @@ const Tickets = () => {
                 });
 
                 setTickets(ticketData);
+
+                // Fetch selected ticket if query param is present
+                const params = new URLSearchParams(location.search);
+                const ticketId = params.get("ticketid");
+                if (ticketId) {
+                    await handleViewTicket(ticketId);
+                }
             } catch (error) {
                 console.error("Error fetching customers or tickets:", error);
             }
         };
 
-            fetchCustomersAndTickets();
-    }, [profile]);
+        fetchCustomersAndTickets();
+    }, [profile, location.search]);
+
 
     const getCustomerName = (id) => {
         if (!customers.length) return "Loading...";
@@ -169,7 +184,7 @@ const Tickets = () => {
                         <p><strong>Customer:</strong> {selectedTicket.customer?.name || getCustomerName(selectedTicket.organizationId)}</p>
                         <p><strong>Products:</strong></p>
                         <div className="d-flex flex-wrap gap-2">
-                            {selectedTicket.products?.map((prod, index) => (
+                            {JSON.parse(selectedTicket?.products.replace(/'/g, '"'))?.map((prod, index) => (
                                 <span key={index} className="badge bg-secondary">
                                     {prod.quantity}x {prod.color}
                                 </span>

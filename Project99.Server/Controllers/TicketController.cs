@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Project99.Server.DTOs;
 using Project99.Server.Extensions;
 using Project99.Server.Repositories;
 using Project99.Server.Repositories.Models;
-using System.Web.Helpers;
 using RegisterRequest = Project99.Server.DTOs.RegisterTicketRequest;
 
 namespace Project99.Server.Controllers;
@@ -55,7 +55,7 @@ public class TicketController(ILogger<TicketController> logger,
             var ticket = new Ticket
             {
                 Title = newTicket.Title,
-                Products = Json.Encode(newTicket.products),
+                Products = JsonConvert.SerializeObject(newTicket.products),
                 Status = newTicket.Status,
                 OrganizationId = newTicket.OrganizationId,
                 Priority = newTicket.Priority,

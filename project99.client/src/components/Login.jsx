@@ -1,45 +1,23 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { GlobalContext } from "../contexts/GlobalContext";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
-    const [isLoading, setIsLoading] = useState(true); // Controls screen visibility
-    const { dispatch } = useContext(GlobalContext);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
-    const [authToken, setAuthToken, removeItem] = useLocalStorage("authToken", "");
+    const location = useLocation();
+    const [authToken, setAuthToken] = useLocalStorage("authToken", "");
+
+    // Compose the from path including query string correctly
+    const from = location.state?.from?.pathname + (location.state?.from?.search || "") || "/";
 
     useEffect(() => {
         const token = authToken.token;
-
         if (token) {
-            fetch("/api/users/profile", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            })
-                .then(async (response) => {
-                    if (response.ok) {
-                        const profileData = await response.json();
-                        dispatch({ type: "setProfile", payload: profileData });
-                        navigate("/", { replace: true });
-                    } else {
-                        // If profile fetch fails, clear token and show login
-                        removeItem("authToken");
-                        setIsLoading(false);
-                        navigate("/login", { replace: true });
-                    }
-                })
-                .catch(() => {
-                    removeItem("authToken");
-                    setIsLoading(false);
-                    navigate("/login", { replace: true });
-                });
+            navigate(from, { replace: true }); // Redirect to saved URL, not always "/"
         } else {
             setIsLoading(false);
         }
@@ -49,40 +27,21 @@ const Login = () => {
         try {
             const response = await fetch("/api/users/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userName: email,
-                    password: password
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userName: email, password }),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 if (data?.token) {
                     setAuthToken(data);
-
-                    // Fetch profile after successful login
-                    const profileResponse = await fetch("/api/users/profile", {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${data.token}`
-                        }
-                    });
-
-                    if (profileResponse.ok) {
-                        const profileData = await profileResponse.json();
-                        dispatch({ type: "setProfile", payload: profileData });
-                        navigate("/", { replace: true });
-                    }
+                    navigate(from, { replace: true }); // Redirect to saved URL after login
                 }
             } else {
                 alert("Invalid username or password...");
             }
         } catch (e) {
-            alert(e.message);
+            alert("Login failed: " + e.message);
         }
     };
 
@@ -123,7 +82,11 @@ const Login = () => {
                     />
                     <label className="form-check-label">Remember Me</label>
                 </div>
-                <button className="btn btn-primary w-100" onClick={handleLogin}>
+                <button
+                    className="btn btn-primary w-100"
+                    onClick={handleLogin}
+                    disabled={isLoading}
+                >
                     Login
                 </button>
             </div>
