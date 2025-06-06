@@ -16,8 +16,8 @@ const Login = () => {
 
     useEffect(() => {
         const token = authToken.token;
-        if (token) {
-            navigate(from, { replace: true }); // Redirect to saved URL, not always "/"
+        if (token && location.pathname !== from) {
+            navigate(from, { replace: true });
         } else {
             setIsLoading(false);
         }

@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { GlobalContext } from "../contexts/GlobalContext";
 import { useNavigate, useLocation } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 const statusMap = {
     0: "Input",
@@ -30,9 +31,7 @@ const Tickets = () => {
         try {
             const response = await fetch(`/api/tickets/${id}`, {
                 method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                }
+                headers: { "Content-Type": "application/json" }
             });
             const data = await response.json();
             navigate(`?ticketid=${id}`, { replace: false });
@@ -54,9 +53,7 @@ const Tickets = () => {
         try {
             const response = await fetch(`/api/tickets/update-ticket`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ Id: selectedTicket.id, status: newStatus }),
             });
 
@@ -78,7 +75,6 @@ const Tickets = () => {
                 let customerApiUrl = profile.role === 0
                     ? "/api/tenents"
                     : `/api/tenents/${profile.OrganizationId}`;
-
                 const customerRes = await fetch(customerApiUrl);
                 const customerData = await customerRes.json();
                 setCustomers(customerData);
@@ -87,7 +83,6 @@ const Tickets = () => {
                 let ticketApiUrl = profile.role === 0
                     ? "/api/tickets"
                     : `/api/tickets/${profile.OrganizationId}`;
-
                 const ticketRes = await fetch(ticketApiUrl, {
                     method: "GET",
                     headers: { "Content-Type": "application/json" }
@@ -103,7 +98,6 @@ const Tickets = () => {
 
                 setTickets(ticketData);
 
-                // Fetch selected ticket if query param is present
                 const params = new URLSearchParams(location.search);
                 const ticketId = params.get("ticketid");
                 if (ticketId) {
@@ -116,7 +110,6 @@ const Tickets = () => {
 
         fetchCustomersAndTickets();
     }, [profile, location.search]);
-
 
     const getCustomerName = (id) => {
         if (!customers.length) return "Loading...";
@@ -141,27 +134,26 @@ const Tickets = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {tickets.map((ticket) => {
-                                return (
-                                    <tr key={ticket.id}>
-                                        <td>{ticket.id}</td>
-                                        <td>{getCustomerName(ticket.organizationId)}</td>
-                                        <td>{statusMap[ticket.status]}</td>
-                                        <td>
-                                            <button className="btn btn-outline-primary btn-sm" onClick={() => handleViewTicket(ticket.id)}>View</button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                            {tickets.map((ticket) => (
+                                <tr key={ticket.id}>
+                                    <td>{ticket.id}</td>
+                                    <td>{getCustomerName(ticket.organizationId)}</td>
+                                    <td>{statusMap[ticket.status]}</td>
+                                    <td>
+                                        <button className="btn btn-outline-primary btn-sm" onClick={() => handleViewTicket(ticket.id)}>View</button>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>
             </div>
 
+            {/* Desktop view details */}
             {selectedTicket && (
-                <div className="card mt-4">
+                <div className="card mt-4 d-none d-md-block">
                     <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-center">
+                        <div className="d-flex justify-content-between align-items-start mb-3">
                             <h3 className="mb-0">Ticket Details</h3>
                             <div className="d-flex align-items-center gap-2">
                                 <select
@@ -174,9 +166,12 @@ const Tickets = () => {
                                         <option key={key} value={key}>{label}</option>
                                     ))}
                                 </select>
-                                <button className="btn btn-outline-danger btn-sm" onClick={handleCloseTicket}>
-                                    Close
-                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    aria-label="Close"
+                                    onClick={handleCloseTicket}
+                                ></button>
                             </div>
                         </div>
                         <hr />
@@ -189,6 +184,44 @@ const Tickets = () => {
                                     {prod.quantity}x {prod.color}
                                 </span>
                             ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Mobile modal view */}
+            {selectedTicket && (
+                <div className="modal fade show d-md-none" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Ticket Details</h5>
+                                <button type="button" className="btn-close" onClick={handleCloseTicket}></button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="mb-3">
+                                    <label className="form-label fw-bold">Status</label>
+                                    <select
+                                        value={selectedTicket.status}
+                                        onChange={handleStatusChange}
+                                        className="form-select form-select-sm"
+                                    >
+                                        {Object.entries(statusMap).map(([key, label]) => (
+                                            <option key={key} value={key}>{label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <p><strong>ID:</strong> {selectedTicket.id}</p>
+                                <p><strong>Customer:</strong> {selectedTicket.customer?.name || getCustomerName(selectedTicket.organizationId)}</p>
+                                <p><strong>Products:</strong></p>
+                                <div className="d-flex flex-wrap gap-2">
+                                    {JSON.parse(selectedTicket?.products.replace(/'/g, '"'))?.map((prod, index) => (
+                                        <span key={index} className="badge bg-secondary">
+                                            {prod.quantity}x {prod.color}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

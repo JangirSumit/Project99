@@ -6,7 +6,7 @@ import Select from "react-select";
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [organizations, setOrganizations] = useState([]);
-    const [newUser, setNewUser] = useState({ id: 0, name: "", userName: "", role: 1, password: "User@123", organizationId: null });
+    const [newUser, setNewUser] = useState({ id: 0, name: "", userName: "", role: 1, password: "User@123", organizationId: 0 });
     const [authToken] = useLocalStorage("authToken", "");
 
     useEffect(() => {
@@ -51,7 +51,7 @@ const Users = () => {
 
     const handleCustomerSelect = (selectedOption) => {
         if (selectedOption) {
-            setNewUser(prevUser => ({ ...prevUser, customerId: selectedOption.value }));
+            setNewUser(prevUser => ({ ...prevUser, organizationId: selectedOption.value }));
         }
     };
 
