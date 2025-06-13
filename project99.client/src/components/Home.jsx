@@ -1,130 +1,115 @@
-import { useEffect, useState, useContext } from "react";
-import { GlobalContext } from "../contexts/GlobalContext";
+/* eslint-disable react-hooks/rules-of-hooks */
+// src/Tickets.jsx
+import { useEffect, useState, useContext } from 'react';
+import { GlobalStyle } from '../themes/GlobalStyle';             // adjust path if your theme lives elsewhere
+import {
+    Page,
+    Card,
+    Table,
+    ViewButton,
+    Badge,
+    ModalOverlay,
+    ModalContent,
+    TableContainer,
+} from '../themes/HomeStyles';
+import { GlobalContext } from '../contexts/GlobalContext';
+import ForbiddenAccess from '../components/ForbiddenAccess';
 import { useNavigate, useLocation } from 'react-router-dom';
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-const statusMap = {
-    0: "Input",
-    1: "Chemical",
-    2: "Production",
-    3: "Done",
-};
+const statusMap = { 0: 'Input', 1: 'Chemical', 2: 'Production', 3: 'Done' };
+const statusOrder = { Production: 0, Chemical: 1, Input: 2, Done: 3 };
 
-const statusOrder = {
-    "Production": 0,
-    "Chemical": 1,
-    "Input": 2,
-    "Done": 3,
-};
-
-const Tickets = () => {
-    const [tickets, setTickets] = useState([]);
-    const [selectedTicket, setSelectedTicket] = useState(null);
-    const [customers, setCustomers] = useState([]);
+export default function Tickets() {
     const { state } = useContext(GlobalContext);
-    const profile = state.profile;
+    const { profile } = state;
     const navigate = useNavigate();
     const location = useLocation();
 
-    const handleViewTicket = async (id) => {
-        try {
-            const response = await fetch(`/api/tickets/${id}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
-            const data = await response.json();
-            navigate(`?ticketid=${id}`, { replace: false });
-            setSelectedTicket(data);
-        } catch (error) {
-            console.error("Error fetching ticket details:", error);
-        }
+    // only admins (role 0) may view
+    if (profile.role !== 0) {
+        return <ForbiddenAccess />;
+    }
+
+    const [tickets, setTickets] = useState([]);
+    const [selectedTicket, setSelected] = useState(null);
+    const [customers, setCustomers] = useState([]);
+
+    // open the modal & fetch details
+    const openTicket = async (id) => {
+        const res = await fetch(`/api/tickets/${id}`);
+        const data = await res.json();
+        setSelected(data);
+        navigate(`?ticketid=${id}`, { replace: false });
     };
 
-    const handleCloseTicket = () => {
-        const newParams = new URLSearchParams(location.search);
-        newParams.delete('ticketid');
-        navigate(`?${newParams.toString()}`, { replace: false });
-        setSelectedTicket(null);
+    // close modal
+    const closeTicket = () => {
+        const params = new URLSearchParams(location.search);
+        params.delete('ticketid');
+        navigate(`?${params.toString()}`, { replace: false });
+        setSelected(null);
     };
 
-    const handleStatusChange = async (e) => {
+    // update status in both UI and backend
+    const updateStatus = async (e) => {
         const newStatus = Number(e.target.value);
-        try {
-            const response = await fetch(`/api/tickets/update-ticket`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ Id: selectedTicket.id, status: newStatus }),
-            });
-
-            if (response.ok) {
-                setSelectedTicket({ ...selectedTicket, status: newStatus });
-                setTickets(prev =>
-                    prev.map(t => t.id === selectedTicket.id ? { ...t, status: newStatus } : t)
-                );
-            }
-        } catch (error) {
-            console.error("Error updating status:", error);
+        const res = await fetch('/api/tickets/update-ticket', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Id: selectedTicket.id, status: newStatus })
+        });
+        if (res.ok) {
+            setSelected({ ...selectedTicket, status: newStatus });
+            setTickets(prev =>
+                prev.map(t =>
+                    t.id === selectedTicket.id ? { ...t, status: newStatus } : t
+                )
+            );
         }
     };
 
+    // initial data load + handle URL param
     useEffect(() => {
-        const fetchCustomersAndTickets = async () => {
-            try {
-                // Fetch customers
-                let customerApiUrl = profile.role === 0
-                    ? "/api/tenents"
-                    : `/api/tenents/${profile.OrganizationId}`;
-                const customerRes = await fetch(customerApiUrl);
-                const customerData = await customerRes.json();
-                setCustomers(customerData);
+        (async () => {
+            const [custRes, tickRes] = await Promise.all([
+                fetch('/api/tenents'),
+                fetch('/api/tickets')
+            ]);
+            const custData = await custRes.json();
+            const ticketData = await tickRes.json();
 
-                // Fetch tickets
-                let ticketApiUrl = profile.role === 0
-                    ? "/api/tickets"
-                    : `/api/tickets/${profile.OrganizationId}`;
-                const ticketRes = await fetch(ticketApiUrl, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" }
-                });
-                const ticketData = await ticketRes.json();
+            // sort by your custom order
+            ticketData.sort((a, b) =>
+                statusOrder[statusMap[a.status]] - statusOrder[statusMap[b.status]]
+            );
 
-                // Sort tickets
-                ticketData.sort((a, b) => {
-                    const aLabel = statusMap[a.status];
-                    const bLabel = statusMap[b.status];
-                    return statusOrder[aLabel] - statusOrder[bLabel];
-                });
+            setCustomers(custData);
+            setTickets(ticketData);
 
-                setTickets(ticketData);
+            // if URL has ticketid, auto-open
+            const qp = new URLSearchParams(location.search);
+            const id = qp.get('ticketid');
+            if (id) openTicket(id);
+        })();
+    }, [profile, location.search, navigate]);
 
-                const params = new URLSearchParams(location.search);
-                const ticketId = params.get("ticketid");
-                if (ticketId) {
-                    await handleViewTicket(ticketId);
-                }
-            } catch (error) {
-                console.error("Error fetching customers or tickets:", error);
-            }
-        };
-
-        fetchCustomersAndTickets();
-    }, [profile, location.search]);
-
-    const getCustomerName = (id) => {
-        if (!customers.length) return "Loading...";
-        const customer = customers.find(c => c.id === id);
-        return customer?.name || "Unknown";
+    // helper to display customer name
+    const getCustomerName = (orgId) => {
+        if (!customers.length) return 'Loading...';
+        const c = customers.find(x => x.id === orgId);
+        return c?.name || 'Unknown';
     };
 
     return (
-        <div className="container mt-4">
-            <h1 className="mb-4 d-flex align-items-center">
-                <i className="bi bi-ticket-detailed me-2"></i> Ticket List
-            </h1>
-            <div className="card">
-                <div className="card-body">
-                    <table className="table table-striped">
+        <>
+            <GlobalStyle />
+
+            <Page>
+                <h1>Ticket List</h1>
+
+                <Card>
+                    <TableContainer>
+                    <Table>
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -134,100 +119,59 @@ const Tickets = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {tickets.map((ticket) => (
-                                <tr key={ticket.id}>
-                                    <td>{ticket.id}</td>
-                                    <td>{getCustomerName(ticket.organizationId)}</td>
-                                    <td>{statusMap[ticket.status]}</td>
+                            {tickets.map(t => (
+                                <tr key={t.id}>
+                                    <td>{t.id}</td>
+                                    <td>{getCustomerName(t.organizationId)}</td>
+                                    <td>{statusMap[t.status]}</td>
                                     <td>
-                                        <button className="btn btn-outline-primary btn-sm" onClick={() => handleViewTicket(ticket.id)}>View</button>
+                                        <ViewButton onClick={() => openTicket(t.id)}>
+                                            View
+                                        </ViewButton>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
-                </div>
-            </div>
+                        </Table>
+                    </TableContainer>
+                </Card>
 
-            {/* Desktop view details */}
-            {selectedTicket && (
-                <div className="card mt-4 d-none d-md-block">
-                    <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-start mb-3">
-                            <h3 className="mb-0">Ticket Details</h3>
-                            <div className="d-flex align-items-center gap-2">
+                {selectedTicket && (
+                    <ModalOverlay onClick={closeTicket}>
+                        <ModalContent onClick={e => e.stopPropagation()}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <select
                                     value={selectedTicket.status}
-                                    onChange={handleStatusChange}
-                                    className="form-select form-select-sm"
-                                    style={{ width: "150px" }}
+                                    onChange={updateStatus}
                                 >
-                                    {Object.entries(statusMap).map(([key, label]) => (
-                                        <option key={key} value={key}>{label}</option>
+                                    {Object.entries(statusMap).map(([k, label]) => (
+                                        <option key={k} value={k}>{label}</option>
                                     ))}
                                 </select>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    aria-label="Close"
-                                    onClick={handleCloseTicket}
-                                ></button>
+                                <ViewButton onClick={closeTicket}>Close</ViewButton>
                             </div>
-                        </div>
-                        <hr />
-                        <p><strong>ID:</strong> {selectedTicket.id}</p>
-                        <p><strong>Customer:</strong> {selectedTicket.customer?.name || getCustomerName(selectedTicket.organizationId)}</p>
-                        <p><strong>Products:</strong></p>
-                        <div className="d-flex flex-wrap gap-2">
-                            {JSON.parse(selectedTicket?.products.replace(/'/g, '"'))?.map((prod, index) => (
-                                <span key={index} className="badge bg-secondary">
-                                    {prod.quantity}x {prod.color}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Mobile modal view */}
-            {selectedTicket && (
-                <div className="modal fade show d-md-none" tabIndex="-1" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Ticket Details</h5>
-                                <button type="button" className="btn-close" onClick={handleCloseTicket}></button>
+                            <hr />
+
+                            <p><strong>ID:</strong> {selectedTicket.id}</p>
+                            <p>
+                                <strong>Customer:</strong>{' '}
+                                {selectedTicket.customer?.name || getCustomerName(selectedTicket.organizationId)}
+                            </p>
+                            <p><strong>Products:</strong></p>
+                            <div>
+                                {JSON.parse(
+                                    selectedTicket.products.replace(/'/g, '"')
+                                ).map((prod, i) => (
+                                    <Badge key={i}>
+                                        {prod.quantity} x {prod.color}
+                                    </Badge>
+                                ))}
                             </div>
-                            <div className="modal-body">
-                                <div className="mb-3">
-                                    <label className="form-label fw-bold">Status</label>
-                                    <select
-                                        value={selectedTicket.status}
-                                        onChange={handleStatusChange}
-                                        className="form-select form-select-sm"
-                                    >
-                                        {Object.entries(statusMap).map(([key, label]) => (
-                                            <option key={key} value={key}>{label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <p><strong>ID:</strong> {selectedTicket.id}</p>
-                                <p><strong>Customer:</strong> {selectedTicket.customer?.name || getCustomerName(selectedTicket.organizationId)}</p>
-                                <p><strong>Products:</strong></p>
-                                <div className="d-flex flex-wrap gap-2">
-                                    {JSON.parse(selectedTicket?.products.replace(/'/g, '"'))?.map((prod, index) => (
-                                        <span key={index} className="badge bg-secondary">
-                                            {prod.quantity}x {prod.color}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+                        </ModalContent>
+                    </ModalOverlay>
+                )}
+            </Page>
+        </>
     );
-};
-
-export default Tickets;
+}

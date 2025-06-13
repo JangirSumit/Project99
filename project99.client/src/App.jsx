@@ -10,6 +10,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Profile from "./components/Profile";
 import Register from './components/Register';
+import ForbiddenAccess from './components/ForbiddenAccess';
+import ViewTicket from './components/ViewTicket';
 
 function AppContent() {
     return (
@@ -21,6 +23,8 @@ function AppContent() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="/register" element={<ProtectedRoute><Register /></ProtectedRoute>} />
+                <Route path="/forbiddenaccess" element={<ForbiddenAccess />} />
+                <Route path="/viewticket" element={<ViewTicket />} />
             </Routes>
         </div>
     );
