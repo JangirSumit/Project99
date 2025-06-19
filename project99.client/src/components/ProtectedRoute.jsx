@@ -42,7 +42,7 @@ const ProtectedRoute = ({ children }) => {
         };
 
         fetchProfile();
-    }, [state.isAuthenticated, dispatch, navigate, location]);
+    }, []);
 
     return state.isAuthenticated ? children : null;
 };

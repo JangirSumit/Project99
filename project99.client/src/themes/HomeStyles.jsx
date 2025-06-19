@@ -29,6 +29,7 @@ export const Card = styled.div`
   width: 100%;
   max-width: 800px;
   margin-bottom: ${theme.spacing.lg};
+  height: 80vh
 `;
 
 // Table
@@ -43,14 +44,14 @@ export const Table = styled.table`
   thead { background: linear-gradient(45deg, #555, #777); }
   thead th { color: #fff; }
   tbody { 
-      height: calc(100vh - 50px) !important;
+      height: calc(75vh - 50px) !important;
       }
 `;
 
 export const TableContainer = styled.div`
   width: 100%;
   overflow-y: auto;
-   height: 80vh !important;
+   height: 75vh !important;
   -webkit-overflow-scrolling: touch;
   margin-bottom: ${theme.spacing.lg};
 `;
