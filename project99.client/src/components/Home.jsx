@@ -91,7 +91,7 @@ export default function Tickets() {
             const id = qp.get('ticketid');
             if (id) openTicket(id);
         })();
-    }, [profile, location.search, navigate]);
+    }, []);
 
     // helper to display customer name
     const getCustomerName = (orgId) => {

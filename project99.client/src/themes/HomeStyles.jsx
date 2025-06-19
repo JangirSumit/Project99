@@ -4,6 +4,7 @@ import { theme } from './GlobalStyle';
 
 // Page wrapper
 export const Page = styled.div`
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -41,11 +42,15 @@ export const Table = styled.table`
   }
   thead { background: linear-gradient(45deg, #555, #777); }
   thead th { color: #fff; }
+  tbody { 
+      height: calc(100vh - 50px) !important;
+      }
 `;
 
 export const TableContainer = styled.div`
   width: 100%;
-  overflow-x: auto;
+  overflow-y: auto;
+   height: 80vh !important;
   -webkit-overflow-scrolling: touch;
   margin-bottom: ${theme.spacing.lg};
 `;

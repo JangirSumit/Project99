@@ -4,11 +4,12 @@ import { theme } from './GlobalStyle';
 const mobile = '@media (max-width: 767px)';
 
 export const FormWrapper = styled.div`
-  min-height: 100vh;
+  height: 91vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: ${theme.spacing.lg};
+  overflow: auto;
   background: linear-gradient(
     135deg,
     ${theme.colors.gradientStart} 0%,
@@ -37,6 +38,7 @@ export const Card = styled.div`
   max-width: 600px;
   padding: ${theme.spacing.lg};
   z-index: 1;
+  overflow: auto;
 
   ${mobile} {
     padding: ${theme.spacing.md};

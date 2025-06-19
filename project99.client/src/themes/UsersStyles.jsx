@@ -37,6 +37,7 @@ export const Card = styled.div`
   background: var(--bg-secondary);
   border-radius: ${theme.radii.md};
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-height: 90vh !important;
   width: 100%;
   max-width: 900px;
   margin: ${theme.spacing.lg} auto;
@@ -53,7 +54,7 @@ export const Card = styled.div`
 
 export const TableContainer = styled.div`
   width: 100%;
-  overflow-x: auto;
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: ${theme.spacing.lg};
 `;
@@ -62,6 +63,7 @@ export const TableContainer = styled.div`
 export const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
+  max-height: 80vh !important;
 
   th, td {
     padding: ${theme.spacing.md};
