@@ -7,13 +7,13 @@ import path from 'path'
 import child_process from 'child_process'
 import { env } from 'process'
 
-// Certificate paths
+// Certificate setup
 const baseFolder =
-    env.APPDATA !== undefined && env.APPDATA !== ''
+    env.APPDATA && env.APPDATA !== ''
         ? `${env.APPDATA}/ASP.NET/https`
         : `${env.HOME}/.aspnet/https`
 
-const certificateName = "project99.client"
+const certificateName = 'project99.client'
 const certFilePath = path.join(baseFolder, `${certificateName}.pem`)
 const keyFilePath = path.join(baseFolder, `${certificateName}.key`)
 
@@ -23,20 +23,11 @@ if (!fs.existsSync(baseFolder)) {
 
 if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
     if (
-        0 !==
         child_process.spawnSync(
             'dotnet',
-            [
-                'dev-certs',
-                'https',
-                '--export-path',
-                certFilePath,
-                '--format',
-                'Pem',
-                '--no-password'
-            ],
+            ['dev-certs', 'https', '--export-path', certFilePath, '--format', 'Pem', '--no-password'],
             { stdio: 'inherit' }
-        ).status
+        ).status !== 0
     ) {
         throw new Error('Could not create certificate.')
     }
@@ -48,30 +39,36 @@ const target = env.ASPNETCORE_HTTPS_PORT
         ? env.ASPNETCORE_URLS.split(';')[0]
         : 'https://localhost:7054'
 
-// ? Merged config
 export default defineConfig({
     plugins: [
         react(),
         VitePWA({
             registerType: 'autoUpdate',
+            injectRegister: 'auto', // Ensures service worker is injected in the HTML
             includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
             manifest: {
                 name: 'Ticket CRM',
                 short_name: 'TicketCRM',
                 description: 'A React PWA powered by Vite',
                 theme_color: '#ffffff',
-                icons: [
-                    {
-                        src: 'pwa-192x192.png',
-                        sizes: '192x192',
-                        type: 'image/png'
-                    },
-                    {
-                        src: 'pwa-512x512.png',
-                        sizes: '512x512',
-                        type: 'image/png'
-                    }
-                ]
+                background_color: '#ffffff',
+                display: 'standalone',
+                start_url: '/',
+                //icons: [
+                //    {
+                //        src: 'pwa-192x192.png',
+                //        sizes: '192x192',
+                //        type: 'image/png'
+                //    },
+                //    {
+                //        src: 'pwa-512x512.png',
+                //        sizes: '512x512',
+                //        type: 'image/png'
+                //    }
+                //]
+            },
+            devOptions: {
+                enabled: true // ?? REQUIRED to serve the manifest during development
             }
         })
     ],

@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children }) => {
         const fetchProfile = async () => {
             try {
                 const data = JSON.parse(localStorage.getItem("authToken"));
-                if (!data?.token) {
+                if (!data?.token || new Date(data?.expirationTime) < new Date() ) {
                     navigate("/login", { replace: true, state: { from: location } });
                     return;
                 }
