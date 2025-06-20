@@ -1,6 +1,6 @@
 // src/Navbar.jsx
 import { useContext } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GlobalContext } from '../contexts/GlobalContext';
 import useLocalStorage from '../hooks/useLocalStorage';
 import {
@@ -23,12 +23,16 @@ const Navbar = () => {
     const [authToken] = useLocalStorage('authToken', '');
     const profile = state.profile || {};
     const location = useLocation();
+    const navigate = useNavigate();
 
     // Hide if not logged in
     if (!authToken.token) return null;
 
     const isAdmin = profile.role === 0;
-    const handleLogout = () => dispatch({ type: 'logout' });
+    const handleLogout = () => {
+        dispatch({ type: 'logout' });
+        navigate("/login", { replace: true, state: { from: location } });
+    };
     const currentPath = location.pathname;
 
     return (

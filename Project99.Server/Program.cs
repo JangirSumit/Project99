@@ -14,6 +14,7 @@ ConfigureServices(builder);
 
 
 // 🔒 Configure JWT Authentication
+builder.Services.AddAuthorization();
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
