@@ -15,7 +15,6 @@ namespace Project99.Server.Controllers;
 
 [ApiController]
 [Route("api/users")]
-[Authorize]
 public class UsersController(ILogger<UsersController> logger, IConfiguration configuration,
     IRepository<User> userRepository) : ControllerBase
 {
